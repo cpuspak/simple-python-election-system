@@ -30,6 +30,7 @@ def checkRegistrationConstraints(userInfo):
 	elif(inDataBaseUser(userInfo.strip().split()[0])):
 		return (False,"Username already registered")
 	else:
+		insert(userInfo)
 		return (True,"Registration successful")
 
 def Register(name, sock, addr):
@@ -43,7 +44,7 @@ def Register(name, sock, addr):
 		if(registrationConstraintsInfo[0] == False):
 			sock.send(registrationConstraintsInfo[1] + " send agein : ".encode('utf-8'))
 		else:
-			sock.send(registrationConstraintsInfo[1] + "send again : ".encode('utf-8'))
+			sock.send(registrationConstraintsInfo[1].encode('utf-8'))
 			registered = 1
 
 def startHosting():
