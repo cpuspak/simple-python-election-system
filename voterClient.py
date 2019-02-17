@@ -20,7 +20,7 @@ def register(sock):
 			repeatFlag = input("Wish to try again (1/0): ")
 
 def Main():
-	host = "Server ip"
+	host = "127.0.0.1"
 	port = 63
 
 	sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
