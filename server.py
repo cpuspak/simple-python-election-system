@@ -2,17 +2,18 @@
 import sqlite3
 import socket
 import threading
+from passlib.apps import custom_app_context
 
 registrationFormat = "uniqueUserName password" #password in encrypted format
 
 class DataBase:
 	def __init__(self,constraints):
 		self.conn = sqlite3.connect('users.db')
-		self.cursor = conn.cursor()
+		self.cursor = self.conn.cursor()
 		self.constraints = constraints
 
 	def createTable(self,tableName,fields):
-		query = "CREATE TABLE "+tableName
+		query = "CREATE TABLE IF NOT EXISTS "+tableName
 		details = "("
 		for i in range(len(fields)):
 			if(i == 0):
@@ -24,10 +25,10 @@ class DataBase:
 		query += details
 		self.cursor.execute(query)
 
-	def checkConstraints(self,info):
+	def checkConstraints(self,userInfo,tableName):
 		if(len(userInfo.strip().split()) != len(self.constraints.strip().split())):
 			return (False,"Arguments not given properly")
-		elif(self.inDataBase(userInfo.strip().split()[0])):
+		elif(self.inDataBase(userInfo.strip().split()[0],tableName)):
 			return (False,"Username already registered")
 		else:
 			return (True,"Registration successful")
@@ -42,12 +43,12 @@ class DataBase:
 
 	def inDataBase(self,record,tableName):
 		if(tableName == 'voters'):
-			record_ = record_.strip().splpit()
+			record_ = record.strip().split()
 			self.cursor.execute("SELECT * FROM voters WHERE username="+"'"+record_[0]+"'")
 			if len(self.cursor.fetchall()) == 0:
-				return True
-			else:
 				return False
+			else:
+				return True
 
 
 
@@ -58,9 +59,15 @@ def Register(name, sock, addr):
 	fields = ['username TEXT','password TEXT'] 
 	voters.createTable('voters',fields)
 	
-	sock.send(str.encode("registration format :"+registrationFormat))
-	userInfo = sock.recv().decode("utf-8")
+	"""
+	sock.recv()
 
+	sock.send(str.encode("registration format :"+registrationFormat))
+	"""
+	userInfo = sock.recv(1024).decode("utf-8")
+	print("recieved")
+
+	"""
 	registered = 0
 
 	while(not registered):
@@ -71,6 +78,15 @@ def Register(name, sock, addr):
 			voters.insert(userInfo,'voters')
 			sock.send(registrationConstraintsInfo[1].encode('utf-8'))
 			registered = 1
+	"""
+	registrationConstraintsInfo = voters.checkConstraints(userInfo,'voters')
+	if(registrationConstraintsInfo[0] == False):
+		send_ = registrationConstraintsInfo[1] + " send agein : "
+		sock.send(send_.encode('utf-8'))
+	else:
+		voters.insert(userInfo,'voters')
+		sock.send(registrationConstraintsInfo[1].encode('utf-8'))
+
 
 def startHosting():
 	host = socket.gethostbyname('0.0.0.0')
