@@ -100,7 +100,7 @@ def startHosting():
 	userRegisterFlag = 1
 
 	while(userRegisterFlag):
-		userRegisterFlag = input("Continue registration (0/1) : ")
+		#userRegisterFlag = input("Continue registration (0/1) : ")
 		c,addr = sock.accept()
 
 		print("Registering user "+"("+str(addr[0])+":"+str(addr[1])+")")
